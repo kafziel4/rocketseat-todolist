@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import at.favre.lib.crypto.bcrypt.BCrypt;
+
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -22,6 +24,11 @@ public class UserController {
     if (user != null) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Usuário já existe");
     }
+
+    var hashedPassword = BCrypt.withDefaults()
+        .hashToString(12, userModel.getPassword().toCharArray());
+
+    userModel.setPassword(hashedPassword);
 
     var userCreated = this.userRepository.save(userModel);
     return ResponseEntity.status(HttpStatus.CREATED).body(userCreated);
